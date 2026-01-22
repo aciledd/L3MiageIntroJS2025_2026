@@ -1,9 +1,11 @@
 export default class Cookie {
   ligne=0;
-  colone=0;
+  colonne=0;
   type=0;
   htmlImage=undefined;
+  aSupprimer = false;
 
+ 
   static urlsImagesNormales = [
     "./assets/images/Croissant@2x.png",
     "./assets/images/Cupcake@2x.png",
@@ -22,6 +24,7 @@ export default class Cookie {
   ];
 
   constructor(type, ligne, colonne) {
+
     this.type = type;
     this.ligne = ligne;
     this.colonne = colonne;
@@ -43,44 +46,54 @@ export default class Cookie {
     img.dataset.ligne = ligne;
     img.dataset.colonne = colonne;
 
+    img.classList.add("cookies");
+
     // On stocke l'image dans l'objet cookie
     this.htmlImage = img;
   }
 
   isSelectionnee() {
-    // on regarde si l'image a la classe CSS "cookies-selected"
-    // A FAIRE
-    //return this.htmlImage.classList.contains("cookies-selected");
+    return this.htmlImage.classList.contains("cookies-selected");
   }
 
   selectionnee() {
-    // on change l'image et la classe CSS
-    // On doit mettre à la place de l'URL classique, l'URL de l'image
-    // surlignée correspondant au type de cookie. Voir la propriété
-    // statique de la classe Cookie, urlsImagesSurlignees
-    // A FAIRE
-   
-    // A FAIRE On va ajouter la classe CSS "cookies-selected" à
-    // l'image du cookie
+  
+    this.htmlImage.src = Cookie.urlsImagesSurlignees[this.type];
+
+    this.htmlImage.classList.add("cookies-selected");
+    this.htmlImage.classList.add("cookies");
     
   }
 
   deselectionnee() {
-    // on change l'image et la classe CSS
-    // A FAIRE
-  
-    // A FAIREOn va ajouter la classe CSS "cookies-selected" à
-    // l'image du cookie
+
+    this.htmlImage.src = Cookie.urlsImagesNormales[this.type];
+
+    this.htmlImage.classList.remove("cookies-selected");
     
   }
 
   static swapCookies(c1, c2) {
-    // A FAIRE
+
     console.log("On essaie SWAP C1 C2");
 
     // On regarde la distance entre les deux cookies
     // si elle est de 1, on peut les swapper
-   
+
+    const dist = Cookie.distance(c1,c2);
+
+    if(dist == 1){
+
+      let tempType= c1.type;
+      c1.type = c2.type;
+      c2.type = tempType;
+
+      c1.htmlImage.src = Cookie.urlsImagesNormales[c1.type];
+      c2.htmlImage.src= Cookie.urlsImagesNormales[c2.type];
+
+      return true;
+    }
+   return false;
   }
 
   /** renvoie la distance au sens "nombre de cases" 

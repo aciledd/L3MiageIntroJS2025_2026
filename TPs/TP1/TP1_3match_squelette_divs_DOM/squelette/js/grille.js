@@ -51,11 +51,10 @@ export default class Grille {
         //let cookieCliquee = this.getCookieFromLC(ligne, colonne);
         console.log("Le cookie cliqué est de type " + cookie.type);
 
-        // test : si on a cliqué sur un cookie déjà sélectionné
-        // on le désélectionne et on ne fait rien.
+      
         if(cookie.isSelectionnee()) {
           cookie.deselectionnee();
-          // on la retire du tableau des cookies sélectionnés
+          
           this.cookieSelectionnes = [];
           return;
         }
@@ -63,13 +62,43 @@ export default class Grille {
         // highlight + changer classe CSS
         cookie.selectionnee();
 
-        // A FAIRE : tester combien de cookies sont sélectionnées
-        // si 0 on ajoute le cookie cliqué au tableau
-        // si 1 on ajoute le cookie cliqué au tableau
-        // et on essaie de swapper
+      if(this.cookieSelectionnes.length === 0){
+
+        this.cookieSelectionnes.push(cookie);
+      }
+      else if(this.cookieSelectionnes.length === 1){
+
+        const premierCookie = this.cookieSelectionnes[0];
+
+        const swapReussi = Cookie.swapCookies(premierCookie,cookie);
+
+        if(swapReussi){
+          console.log("swap reussi!");
+
+          this.reinitialiserMarqueurs();
+          this.detecterMatch3Lignes();
+          this.detecterMatch3Colonnes();
+
+
+          let nbDetectees = this.afficherCookiesASupprimer();
+          if (nbDetectees > 0) {
+              console.log(`${nbDetectees} cookies à supprimer !`);
+              // TODO 
+       }
+
+        }
+        else{
+          console.log("swap impossible")
+      
+        }
+
+        premierCookie.deselectionnee();
+        cookie.deselectionnee();
+
+        this.cookieSelectionnes = [];
       }
 
-      // A FAIRE : ecouteur de drag'n'drop
+    };
       
       // on affiche l'image dans le div pour la faire apparaitre à l'écran.
       div.appendChild(img);
@@ -116,4 +145,134 @@ export default class Grille {
 
     return tab;
   }
+
+  detecterMatch3Lignes(){
+
+    console.log("détection des alignements horizontaux");
+
+    for(let ligne=0; ligne< this.l; ligne++){
+
+      let compteur= 1;
+      let typeCourant= this.tabcookies[ligne][0].type;
+
+      for(let col=1; col< this.c; col++){
+
+        let cookie = this.tabcookies[ligne][col];
+
+        if(cookie.type === typeCourant){
+
+          compteur++;
+        }
+        else{
+
+          if(compteur >= 3){
+
+            for(let i= col- compteur; i < col; i++){
+
+              this.tabcookies[ligne][i].aSupprimer= true;
+            }
+
+          }
+
+          compteur= 1;
+          typeCourant= cookie.type;
+        }
+      }
+
+      if(compteur >= 3){
+
+        for(let i= this.c- compteur; i < this.c; i++){
+
+          this.tabcookies[ligne][i].aSupprimer= true;
+        }
+      }
+    }
+  }
+
+
+  detecterMatch3Colonnes(){
+
+
+    console.log("detecter les alignements en colonnes");
+
+    for(let col= 0; col < this.c; col++) {
+
+      let compteur= 1;
+      let typeCourant= this.tabcookies[0][col].type;
+
+    
+      for(let ligne= 1; ligne< this.l; ligne++){
+
+        let cookie= this.tabcookies[ligne][col];
+
+        if(cookie.type === typeCourant){
+          compteur++;
+        }
+
+      else{
+        if(compteur >= 3){
+
+          for(let i= ligne- compteur; i < ligne; i++){
+
+            this.tabcookies[i][col].aSupprimer= true;
+          }
+        }
+
+        compteur= 1;
+        typeCourant= cookie.type;
+      }
+
+
+    }
+
+    if(compteur >= 3){
+
+      for(let i= this.l- compteur; i < this.l; i++){
+
+        this.tabcookies[i][col].aSupprimer= true;
+      }
+    }
+
+  }
+
+  }
+
+
+  reinitialiserMarqueurs(){
+
+
+    for(let l= 0; l < this.l; l++){
+
+      for(let c=0; c < this.c; c++){
+        this.tabcookies[l][c].aSupprimer= false;
+      }
+    }
+
+
+
+  }
+
+  afficherCookiesASupprimer(){
+
+    let nbCookies= 0;
+
+    for(let l= 0; l< this.l; l++){
+
+      for(let c= 0; c < this.c; c++){
+
+        let cookie= this.tabcookies[l][c];
+
+        if(cookie.aSupprimer){
+
+          cookie.selectionnee();
+          nbCookies++;
+        }
+      }
+    }
+
+    console.log(`${nbCookies} cookies à supprimer détectées`);
+    return nbCookies;
+
+  }
+
 }

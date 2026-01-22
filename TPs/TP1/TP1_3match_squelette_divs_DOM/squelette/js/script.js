@@ -14,5 +14,32 @@ function init() {
   // On dit aussi que le DOM est ready (en fait un peu plus...)
 
   grille = new Grille(9, 9);
-  ///grille.showCookies();
+  grille.showCookies();
+
+  window.grille= grille;
+
+
+  let btnDetection = document.querySelector("#btnDetecterAlignements");
+  if (btnDetection) {
+
+      btnDetection.onclick = () => {
+          
+
+          grille.reinitialiserMarqueurs();
+          grille.detecterMatch3Lignes();
+          grille.detecterMatch3Colonnes();
+
+          let nb = grille.afficherCookiesASupprimer();
+          
+          if (nb === 0) {
+              alert("Aucun alignement détecté !");
+          } 
+          
+          else {
+              alert(`${nb} cookies alignées détectées !`);
+          }
+
+    };
+  }
+  
 }
