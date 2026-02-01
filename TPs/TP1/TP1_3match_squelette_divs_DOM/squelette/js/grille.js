@@ -46,65 +46,15 @@ export default class Grille {
       // on récupère l'image correspondante
       let img = cookie.htmlImage;
 
-      img.onclick = (event) => {
+      img.onclick= (event)=> {
+        this.gererClicCookie(cookie);
+      };
 
-        console.log("On a cliqué sur la ligne " + ligne + " et la colonne " + colonne);
-        //let cookieCliquee = this.getCookieFromLC(ligne, colonne);
-        console.log("Le cookie cliqué est de type " + cookie.type);
-
-      
-        if(cookie.isSelectionnee()) {
-          cookie.deselectionnee();
-          
-          this.cookieSelectionnes = [];
-          return;
-        }
-
-        // highlight + changer classe CSS
-        cookie.selectionnee();
-
-      if(this.cookieSelectionnes.length === 0){
-
-        this.cookieSelectionnes.push(cookie);
-      }
-      else if(this.cookieSelectionnes.length === 1){
-
-        const premierCookie = this.cookieSelectionnes[0];
-
-        const swapReussi = Cookie.swapCookies(premierCookie,cookie);
-
-        if(swapReussi){
-          console.log("swap reussi!");
-
-          this.reinitialiserMarqueurs();
-          this.detecterMatch3Lignes();
-          this.detecterMatch3Colonnes();
-
-
-          let nbDetectees = this.supprimerCookiesDetectees();
-          
-          if (nbDetectees > 0) {
-              console.log(`${nbDetectees} cookies à supprimer !`);
-              // TODO 
-       }
-
-        }
-        else{
-          console.log("swap impossible")
-      
-        }
-
-        premierCookie.deselectionnee();
-        cookie.deselectionnee();
-
-        this.cookieSelectionnes = [];
-      }
-
-    };
-      
+     
       // on affiche l'image dans le div pour la faire apparaitre à l'écran.
       div.appendChild(img);
     });
+  
   }
 
   // inutile ?
@@ -285,7 +235,7 @@ export default class Grille {
 
     this.tabcookies[ligne][col]= newCookie;
 
-    let caseDivs= document.querySelectorAll("#grillediv"); //remplace dans le dom
+    let caseDivs= document.querySelectorAll("#grille div"); //remplace dans le dom
     let index= ligne*this.c+ col;
     let div= caseDivs[index];
 
@@ -368,6 +318,83 @@ export default class Grille {
       
       }
     }
+
   }
+
+
+  gererChuteColonne(col){
+
+    //en partant du bas vers le haut 
+
+    for(let ligne= this.l- 1; ligne >= 0; ligne--){
+
+      let cookie= this.tabcookies[ligne][col];
+
+      if(cookie.htmlImage.style.opacity === "0"){ //si le cookie a disparu on le cache
+
+        //on cherche ensuite la premiere case vide de cookie au dessus
+        let ligneSource= ligne-1;
+
+        while(ligneSource >= 0 && this.tabcookies[ligneSource][col].htmlImage.style.opacity === "0"){
+          ligneSource--;
+
+        }
+
+        if(ligneSource >=0){
+
+          //on a trouvé un cookie à faire chuter
+          let cookieSource= this.tabcookies[ligneSource][col];
+
+          this.deplacerCookie(cookieSource, ligne, col); //on le swap
+        }
+        else {
+          this.creerNouveauCookie(ligne, col); //si pas de cookie au dessus on créé un nouveau
+        }
+
+        
+      }
+    }
+
+  }
+
+  deplacerCookie(cookie, nouvelleLigne, nouvelleCol){
+
+    let ancienneLigne= cookie.ligne;
+    let ancienneCol= cookie.colonne;
+
+    //mise à jour des coord 
+
+    cookie.ligne= nouvelleLigne;
+    cookie.colonne = nouvelleCol;
+
+    cookie.htmlImage.dataset.ligne= nouvelleLigne;
+    cookie.htmlImage.dataset.colonne= nouvelleCol;
+
+    this.tabcookies[nouvelleLigne][nouvelleCol]= cookie;
+
+    let cookieVide= new Cookie(0,ancienneLigne,ancienneCol); // a cette place on crée un cookie vide 
+    cookieVide.htmlImage.style.opacity = "0";
+    this.tabcookies[ancienneLigne][ancienneCol]= cookieVide;
+
+    //mise à jour du dom
+    let caseDivs= document.querySelectorAll("#grille div");
+    let indexNew= nouvelleLigne *this.c + nouvelleCol;
+    let indexOld= ancienneLigne* this.c + ancienneCol;
+
+    caseDivs[indexNew].innerHTML= '';
+    caseDivs[indexNew].appendChild(cookie.htmlImage);
+    cookie.htmlImage.style.opacity= "1";  // on le fait apparaitre 
+
+    caseDivs[indexOld].innerHTML= '';
+
+  }
+
+  gererChutesToutesColonnes(){
+
+    for(let col=0; col< this.c; col++){
+      this.gererChuteColonne(col);
+    }
+  }
+
 
 }
