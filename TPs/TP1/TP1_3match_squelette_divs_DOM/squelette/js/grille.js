@@ -1,4 +1,4 @@
-import Cookie from "./Cookie.js";
+import Cookie from "./cookie.js";
 import { create2DArray } from "./utils.js";
 
 /* Classe principale du jeu, c'est une grille de cookies. Le jeu se joue comme
@@ -47,6 +47,7 @@ export default class Grille {
       let img = cookie.htmlImage;
 
       img.onclick = (event) => {
+
         console.log("On a cliqué sur la ligne " + ligne + " et la colonne " + colonne);
         //let cookieCliquee = this.getCookieFromLC(ligne, colonne);
         console.log("Le cookie cliqué est de type " + cookie.type);
@@ -80,7 +81,8 @@ export default class Grille {
           this.detecterMatch3Colonnes();
 
 
-          let nbDetectees = this.afficherCookiesASupprimer();
+          let nbDetectees = this.supprimerCookiesDetectees();
+          
           if (nbDetectees > 0) {
               console.log(`${nbDetectees} cookies à supprimer !`);
               // TODO 
@@ -252,7 +254,7 @@ export default class Grille {
 
   }
 
-  afficherCookiesASupprimer(){
+  supprimerCookiesDetectees(){
 
     let nbCookies= 0;
 
@@ -264,7 +266,7 @@ export default class Grille {
 
         if(cookie.aSupprimer){
 
-          cookie.selectionnee();
+          cookie.disparaitre();
           nbCookies++;
         }
       }
@@ -273,6 +275,99 @@ export default class Grille {
     console.log(`${nbCookies} cookies à supprimer détectées`);
     return nbCookies;
 
+  }
+
+
+  creerNouveauCookie(ligne, col){
+
+    const type= Math.floor(Math.random() *6);
+    const newCookie= new Cookie(type,ligne,col);
+
+    this.tabcookies[ligne][col]= newCookie;
+
+    let caseDivs= document.querySelectorAll("#grillediv"); //remplace dans le dom
+    let index= ligne*this.c+ col;
+    let div= caseDivs[index];
+
+    div.innerHTML= '';
+    div.appendChild(newCookie.htmlImage); //l'image du cookie que l'on remplace
+
+    //comme dans showCookies
+    newCookie.htmlImage.onclick= (event)=> {
+      this.gererClicCookie(newCookie);
+    };
+
+    return newCookie;
+  }
+
+
+  gererClicCookie(cookie){
+
+    console.log("j'ai cliqué sur la ligne "+ cookie.ligne + " et sur la colonne " + cookie.colonne);
+
+    if(cookie.isSelectionnee()) {
+
+      cookie.deselectionnee();
+      this.cookieSelectionnes= []
+
+      return;
+    }
+
+    cookie.selectionnee();
+
+    if(this.cookieSelectionnes.length === 0){
+
+      this.cookieSelectionnes.push(cookie);
+    }
+
+    else if(this.cookieSelectionnes.length === 1){
+      const premierCookie= this.cookieSelectionnes[0];
+      const swapReussi= Cookie.swapCookies(premierCookie,cookie);
+
+      if(swapReussi){
+        console.log("swap reussi");
+        this.traiterApresSwap();
+      }
+
+      else{
+        console.log("swap impossible");
+      }
+
+      premierCookie.deselectionnee();
+      cookie.deselectionnee();
+      this.cookieSelectionnes= [];
+    }
+
+
+  }
+
+
+
+  traiterApresSwap(){
+
+
+    let continuer= true;
+
+    while(continuer){
+
+      // on detecte d'abord les alignements
+      
+      this.reinitialiserMarqueurs();
+      this.detecterMatch3Lignes();
+      this.detecterMatch3Colonnes();
+
+
+      let nbDetectees= this.supprimerCookiesDetectees();
+
+      if(nbDetectees === 0){
+
+        continuer= false;
+      }
+      else{
+        this.gererChutesToutesColonnes(); //il faut gérer les chutes + continuer detection alignements
+      
+      }
+    }
   }
 
 }

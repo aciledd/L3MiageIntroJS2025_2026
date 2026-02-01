@@ -29,7 +29,7 @@ function init() {
           grille.detecterMatch3Lignes();
           grille.detecterMatch3Colonnes();
 
-          let nb = grille.afficherCookiesASupprimer();
+          let nb = grille.supprimerCookiesDetectees();
           
           if (nb === 0) {
               alert("Aucun alignement détecté !");

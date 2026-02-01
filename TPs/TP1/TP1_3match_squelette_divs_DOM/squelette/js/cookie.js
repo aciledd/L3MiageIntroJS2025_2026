@@ -73,6 +73,11 @@ export default class Cookie {
     
   }
 
+  disparaitre(){
+
+    this.htmlImage.style.opacity = "0"; //permet de rendre invisible les cookies
+  }
+
   static swapCookies(c1, c2) {
 
     console.log("On essaie SWAP C1 C2");
