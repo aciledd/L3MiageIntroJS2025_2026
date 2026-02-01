@@ -13,6 +13,7 @@ export default class Grille {
   constructor(l, c) {
     this.c = c;
     this.l = l;
+    this.score = 0;
 
     this.tabcookies = this.remplirTableauDeCookies(6)
   }
@@ -222,6 +223,28 @@ export default class Grille {
       }
     }
 
+    if(nbCookies > 0){// on ajoute des points pour le score
+
+      let points= nbCookies* 10; // 10PTS / cookie
+     
+      if(nbCookies >= 4){
+        points += 20; // 60 points 
+      }
+
+      if(nbCookies >= 5){
+        points += 30; // 100 points 
+      }
+
+      if(nbCookies >= 6){
+        points += 50; //differents bonus selon les associations 
+      }
+
+      this.score += points;
+      this.afficherScore();
+      console.log(`+${points} points ! Score total : ${this.score}`);
+
+    }
+
     console.log(`${nbCookies} cookies à supprimer détectées`);
     return nbCookies;
 
@@ -394,6 +417,16 @@ export default class Grille {
     for(let col=0; col< this.c; col++){
       this.gererChuteColonne(col);
     }
+  }
+
+  afficherScore(){
+
+    let scoreDiv= document.querySelector("#infos div:nth-child(2)");
+
+    if(scoreDiv){
+      scoreDiv.textContent= `Score : ${this.score}`;
+    }
+
   }
 
 
